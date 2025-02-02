@@ -1,10 +1,15 @@
-import pygame
 import random
+import sqlite3
+import pygame
 
 pygame.init()
 
 clock = pygame.time.Clock()
 FPS = 24
+
+# Подключаем базу данных
+con = sqlite3.connect('scores.db')
+cur = con.cursor()
 
 # Размеры окна
 SCREEN = WIDTH, HEIGHT = 300, 500
@@ -83,6 +88,7 @@ class Tetramino:
     # 8   9   10  11
     # 12  13  14  15
 
+    # Индексы ячеек, которые занимают блоки в данной матрице
     FIGURES = {
         'I': [[1, 5, 9, 13], [4, 5, 6, 7]],
         'Z': [[4, 5, 9, 10], [2, 6, 5, 9]],
@@ -119,6 +125,20 @@ class Tetris:
         self.next = None
         self.gameover = False
         self.new_figure()
+        try:
+            cur.execute("""CREATE TABLE best (
+    best_score INTEGER
+);""")
+            cur.execute("""INSERT INTO best (
+                     best_score
+                 )
+                 VALUES (
+                     0
+                 );""")
+        except:
+            pass
+        cur.execute("""select best_score from best""")
+        self.best_score = cur.fetchall()[0][0]
 
     def draw_grid(self):
         for i in range(self.rows + 1):
@@ -282,6 +302,12 @@ while running:
         win.blit(msg1, (rect.centerx - msg1.get_width() / 2, rect.y + 80))
         win.blit(msg2, (rect.centerx - msg2.get_width() / 2, rect.y + 110))
 
+        if tetris.score > tetris.best_score:
+            cur.execute(f"""UPDATE best
+   SET best_score = {tetris.score}
+ WHERE best_score = {tetris.best_score};
+""")
+
     # ИНТЕРФЕЙС
 
     pygame.draw.rect(win, BLUE, (0, HEIGHT - 120, WIDTH, 120))
@@ -294,12 +320,15 @@ while running:
                     y = HEIGHT - 100 + CELLSIZE * (tetris.next.y + i)
                     win.blit(img, (x, y))
 
-    scoreimg = font.render(f'{tetris.score}', True, WHITE)
-    levelimg = font2.render(f'Best score : {9999}', True, WHITE)
+    scoreimg = font1.render(f'{tetris.score}', True, WHITE)
+    levelimg = font2.render(f'Best score : {tetris.best_score}', True, WHITE)
     win.blit(scoreimg, (250 - scoreimg.get_width() // 2, HEIGHT - 110))
-    win.blit(levelimg, (250 - levelimg.get_width() // 2, HEIGHT - 30))
+    win.blit(levelimg, (220 - levelimg.get_width() // 2, HEIGHT - 30))
 
     pygame.draw.rect(win, BLUE, (0, 0, WIDTH, HEIGHT - 120), 2)
     clock.tick(FPS)
     pygame.display.update()
+
+con.commit()
+con.close()
 pygame.quit()
