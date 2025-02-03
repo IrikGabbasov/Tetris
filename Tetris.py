@@ -19,9 +19,9 @@ ROWS = (HEIGHT - 120) // CELLSIZE
 COLS = WIDTH // CELLSIZE
 
 # Цвета
-BLACK = (21, 24, 29)
-BLUE = (31, 25, 76)
-RED = (252, 91, 122)
+BLACK = (10, 10, 10)
+BLUE = (20, 15, 100)
+RED = (255, 100, 130)
 WHITE = (255, 255, 255)
 
 # Создание окна
@@ -45,7 +45,7 @@ Assets = {
 
 # Шрифты для текста
 font = pygame.font.Font(None, 30)
-font1 = pygame.font.Font('Fonts/Alternity-8w7J.ttf', 50)
+font1 = pygame.font.Font('Fonts/BrunoAceSC-Regular.ttf', 50)
 font2 = pygame.font.SysFont('cursive', 25)
 
 
