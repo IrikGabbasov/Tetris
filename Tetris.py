@@ -48,7 +48,7 @@ font = pygame.font.Font(None, 30)
 font1 = pygame.font.Font('Fonts/BrunoAceSC-Regular.ttf', 50)
 font2 = pygame.font.SysFont('cursive', 25)
 
-
+# Функция для отображения текста на экране
 def draw_text(text, font, color, surface, x, y):
     textobj = font.render(text, 1, color)
     textrect = textobj.get_rect()
@@ -88,7 +88,7 @@ class Tetramino:
     # 8   9   10  11
     # 12  13  14  15
 
-    # Индексы ячеек, которые занимают блоки в данной матрице
+    # Индексы ячеек, которые занимают фигуры в данной матрице
     FIGURES = {
         'I': [[1, 5, 9, 13], [4, 5, 6, 7]],
         'Z': [[4, 5, 9, 10], [2, 6, 5, 9]],
@@ -140,18 +140,21 @@ class Tetris:
         cur.execute("""select best_score from best""")
         self.best_score = cur.fetchall()[0][0]
 
+    # Функция для отрисовки сетки
     def draw_grid(self):
         for i in range(self.rows + 1):
             pygame.draw.line(win, WHITE, (0, CELLSIZE * i), (WIDTH, CELLSIZE * i))
         for j in range(self.cols):
             pygame.draw.line(win, WHITE, (CELLSIZE * j, 0), (CELLSIZE * j, HEIGHT - 120))
 
+    # Функция для выбора новаой фигуры
     def new_figure(self):
         if not self.next:
             self.next = Tetramino(5, 0)
         self.figure = self.next
         self.next = Tetramino(5, 0)
 
+    # Функция для проверки пересечения фигур
     def intersects(self):
         intersection = False
         for i in range(4):
@@ -164,6 +167,7 @@ class Tetris:
                         intersection = True
         return intersection
 
+    # Функция для очистки заполненной линии
     def remove_line(self):
         rerun = False
         for y in range(self.rows - 1, 0, -1):
@@ -176,10 +180,10 @@ class Tetris:
                 self.board.insert(0, [0 for i in range(self.cols)])
                 self.score += 1
                 rerun = True
-
         if rerun:
             self.remove_line()
 
+    # Функция для остановки падения фигуры
     def freeze(self):
         for i in range(4):
             for j in range(4):
@@ -190,23 +194,27 @@ class Tetris:
         if self.intersects():
             self.gameover = True
 
+    # Функция для быстрого спуска фигуры
     def go_space(self):
         while not self.intersects():
             self.figure.y += 1
         self.figure.y -= 1
         self.freeze()
 
+    # Функция для ускорения падения фигуры
     def go_down(self):
         self.figure.y += 1
         if self.intersects():
             self.figure.y -= 1
             self.freeze()
 
+    # Функция для перемещения фигуры по горизонтали
     def go_side(self, dx):
         self.figure.x += dx
         if self.intersects():
             self.figure.x -= dx
 
+    # Функция для поворота фигуры
     def rotate(self):
         rotation = self.figure.rotation
         self.figure.rotate()
@@ -220,6 +228,7 @@ can_move = True
 
 tetris = Tetris(ROWS, COLS)
 
+# Основной игровой цикл
 running = True
 while running:
     win.fill(BLACK)
@@ -233,7 +242,7 @@ while running:
             if not tetris.gameover:
                 tetris.go_down()
 
-    # ОБРАБОТКА СОБЫТИЙ
+    # обработка событий
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -268,6 +277,7 @@ while running:
             if event.key == pygame.K_DOWN:
                 move_down = False
 
+    # отрисовка упавших фигур
     for x in range(ROWS):
         for y in range(COLS):
             if tetris.board[x][y] > 0:
@@ -277,6 +287,7 @@ while running:
                 pygame.draw.rect(win, BLACK, (y * CELLSIZE, x * CELLSIZE,
                                               CELLSIZE, CELLSIZE), 1)
 
+    # отрисовка падающих фигур
     if tetris.figure:
         for i in range(4):
             for j in range(4):
@@ -287,8 +298,7 @@ while running:
                     win.blit(img, (x, y))
                     pygame.draw.rect(win, BLACK, (x, y, CELLSIZE, CELLSIZE), 1)
 
-    # КОНЕЦ ИГРЫ
-
+    # конец игры
     if tetris.gameover:
         rect = pygame.Rect((50, 140, WIDTH - 100, HEIGHT - 350))
         pygame.draw.rect(win, BLACK, rect)
@@ -308,7 +318,7 @@ while running:
  WHERE best_score = {tetris.best_score};
 """)
 
-    # ИНТЕРФЕЙС
+    # интерфейс
 
     pygame.draw.rect(win, BLUE, (0, HEIGHT - 120, WIDTH, 120))
     if tetris.next:
